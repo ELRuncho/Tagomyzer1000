@@ -3,6 +3,7 @@ import click
 
 session= boto3.Session(profile_name='personal')
 ec2 = session.resource('ec2')
+ebs = ec2.volumes.all()
 
 def filter_instances(project):
 	instances=[]
@@ -50,22 +51,30 @@ def list_snapshots(project, list_all):
 @cli.group('volumes')
 def volumes():
 	"""Commands for Volumes"""
+
 @volumes.command('list')
 @click.option('--project', default=None, help="Only Volumes pertaining to the specified project tag")
-def list_volumes(project):
-	"Lists EC2 volumes"
-
-	instances = filter_instances(project)
-
-	for i in instances:
-		for v in i.volumes.all():
+@click.option('--all', 'alled', default=False, is_flag=True, help='lists all existing volumes attached or not')
+def list_volumes(project,alled):
+	if alled:
+		for v in ebs:
 			print(" | ".join((
 				v.id,
-				i.id,
 				v.state,
 				str(v.size)+"GiB",
 				v.encrypted and "Encrypted" or "Not Encrypted"
-			)))
+				)))
+	else:
+		instances = filter_instances(project)
+		for i in instances:
+			for v in i.volumes.all():
+				print(" | ".join((
+					v.id,
+					i.id,
+					v.state,
+					str(v.size)+"GiB",
+					v.encrypted and "Encrypted" or "Not Encryted"
+					)))
 	return
 
 @cli.group('instances')
