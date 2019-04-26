@@ -1,7 +1,7 @@
 import boto3
 import click
 
-session= boto3.Session(profile_name='tago')
+session= boto3.Session(profile_name='personal')
 ec2 = session.resource('ec2')
 
 def filter_instances(project):
