@@ -5,6 +5,21 @@ session= boto3.Session(profile_name='personal')
 ec2 = session.resource('ec2')
 ebs = ec2.volumes.all()
 
+def filter_volumes(flag):
+	volumes=[]
+	if flag=='unused':
+		volumes=[vol for vol in ebs if vol.state=='available']
+		return volumes
+			
+def print_volumes(volumes):
+	for v in volumes:
+			print(" | ".join((
+				v.id,
+				v.state,
+				str(v.size)+"GiB",
+				v.encrypted and "Encrypted" or "Not Encrypted"
+				)))
+
 def filter_instances(project):
 	instances=[]
 
@@ -21,7 +36,7 @@ def has_pending_snapshot(volume):
 
 @click.group()
 def cli():
-	"""Shotty manages snapshots"""
+	"""Tagomyzer manages aws resources"""
 
 @cli.group('snapshots')
 def snapshots():
@@ -55,15 +70,15 @@ def volumes():
 @volumes.command('list')
 @click.option('--project', default=None, help="Only Volumes pertaining to the specified project tag")
 @click.option('--all', 'alled', default=False, is_flag=True, help='lists all existing volumes attached or not')
-def list_volumes(project,alled):
+@click.option('--unused', 'unused', default=False, is_flag=True, help='list unattached volumes only')
+def list_volumes(project,alled,unused):
+	volumes=[]
 	if alled:
-		for v in ebs:
-			print(" | ".join((
-				v.id,
-				v.state,
-				str(v.size)+"GiB",
-				v.encrypted and "Encrypted" or "Not Encrypted"
-				)))
+		volumes=ebs
+		print_volumes(volumes)
+	elif unused:
+		volumes=filter_volumes('unused')
+		print_volumes(volumes)
 	else:
 		instances = filter_instances(project)
 		for i in instances:
