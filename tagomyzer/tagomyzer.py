@@ -1,5 +1,6 @@
 import boto3
 import click
+import time
 
 session= boto3.Session(profile_name='personal')
 ec2 = session.resource('ec2')
@@ -92,6 +93,13 @@ def list_volumes(project,alled,unused):
 					)))
 	return
 
+@volumes.command('tagomyze')
+@click.option('--tag', default=None, help="tagomyze unused volumes that posses a specific tag")
+def tagomyze_volumes(tag):
+	volumes = filter_volumes('unused')
+	now = time.strftime("%H:%M %p - %A, %B %d %Y", time.gmtime())
+	for vol in volumes:
+		vol.create_snapshot(Description='Tagomyzed at '+ now)
 @cli.group('instances')
 def instances():
 	"""Commands For instances"""
