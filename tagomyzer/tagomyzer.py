@@ -99,7 +99,15 @@ def tagomyze_volumes(tag):
 	volumes = filter_volumes('unused')
 	now = time.strftime("%H:%M %p - %A, %B %d %Y", time.gmtime())
 	for vol in volumes:
-		vol.create_snapshot(Description='Tagomyzed at '+ now)
+		vol.create_snapshot(
+			Description='Tagomyzed at '+ now,
+			TagSpecifications=[
+				{
+					'ResourceType': 'snapshot',
+					'Tags': vol.tags
+				}
+				]
+			)
 @cli.group('instances')
 def instances():
 	"""Commands For instances"""
