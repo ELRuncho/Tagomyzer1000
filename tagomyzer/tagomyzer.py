@@ -2,7 +2,7 @@ import boto3
 import click
 import time
 
-session= boto3.Session(profile_name='personal')
+session= boto3.Session(profile_name='natgeouat')
 ec2 = session.resource('ec2')
 ebs = ec2.volumes.all()
 
@@ -94,13 +94,14 @@ def list_volumes(project,alled,unused):
 	return
 
 @volumes.command('tagomyze')
-@click.option('--tag', default=None, help="tagomyze unused volumes that posses a specific tag")
+@click.option('--tag', default=None, help="tagomyzes unused volumes that posses a specific tag")
 def tagomyze_volumes(tag):
 	volumes = filter_volumes('unused')
 	now = time.strftime("%H:%M %p - %A, %B %d %Y", time.gmtime())
 	for vol in volumes:
-		vol.create_snapshot(
-			Description='Tagomyzed at '+ now,
+		print("Creating snapshot of volume {0}".format(vol.id))
+		snap=vol.create_snapshot(
+			Description='volume {0} deleted at '.format(vol.id)+ now,
 			TagSpecifications=[
 				{
 					'ResourceType': 'snapshot',
@@ -108,6 +109,12 @@ def tagomyze_volumes(tag):
 				}
 				]
 			)
+		snap.wait_until_completed()
+		print("Snapshot {0} completed".format(snap.id))
+		vol.delete()
+		print("The Volume has been deleted")
+		
+
 @cli.group('instances')
 def instances():
 	"""Commands For instances"""
@@ -128,7 +135,7 @@ def create_snapshots(project):
 
 		for v in i.volumes.all():
 			if has_pending_snapshot(v):
-				print("Skipping volume {0}. snapshot already in progress".filter(v.id))
+				print("Skipping volume {0}. snapshot already in progress".format(v.id))
 				continue
 			print("Creating snapshot of volume {0} on instance {1}".format(v.id,i.id))
 			v.create_snapshot(Description="Created by Snapshotalyzer 3000")
@@ -137,7 +144,6 @@ def create_snapshots(project):
 
 		i.start()
 		i.wait_until_running()
-
 	print("Completed")
 
 	return
