@@ -100,17 +100,30 @@ def tagomyze_volumes(tag):
 	now = time.strftime("%H:%M %p - %A, %B %d %Y", time.gmtime())
 	for vol in volumes:
 		print("Creating snapshot of volume {0}".format(vol.id))
-		snap=vol.create_snapshot(
-			Description='volume {0} deleted at '.format(vol.id)+ now,
-			TagSpecifications=[
-				{
-					'ResourceType': 'snapshot',
-					'Tags': vol.tags
-				}
-				]
-			)
-		snap.wait_until_completed()
-		print("Snapshot {0} completed".format(snap.id))
+		if vol.tags==True:
+			snap=vol.create_snapshot(
+				Description='volume {0} deleted at '.format(vol.id)+ now,
+				TagSpecifications=[
+					{
+						'ResourceType': 'snapshot',
+						'Tags': vol.tags
+					}
+					]
+				)
+			snap.wait_until_completed()
+			print("Snapshot {0} completed".format(snap.id))
+		else:
+			snap=vol.create_snapshot(
+				Description='volume {0} deleted at '.format(vol.id)+ now,
+				TagSpecifications=[
+					{
+						'ResourceType': 'snapshot',
+						'Tags': [{'Key': 'Tags', 'Value': 'NonPresent'}]
+					}
+					]
+				)
+			snap.wait_until_completed()
+			print("Snapshot {0} completed".format(snap.id))
 		vol.delete()
 		print("The Volume has been deleted")
 		
