@@ -111,9 +111,10 @@ def tagomyze_volumes(tag):
 					]
 				)
 			#snap.wait_until_completed()
+			print("in progress")
 			while has_pending_snapshot(vol):
-				print("Snapshot {0} is {1} completed".format(snap.id, snap.progress))
-				time.sleep(3)
+				print(".")
+				time.sleep(15)
 
 
 			print("Snapshot {0} completed".format(snap.id))
@@ -128,9 +129,10 @@ def tagomyze_volumes(tag):
 					]
 				)
 			#snap.wait_until_completed()
+			print("in progress")
 			while has_pending_snapshot(vol):
-				print("Snapshot {0} is {1} completed".format(snap.id, snap.progress))
-				time.sleep(3)
+				print(".")
+				time.sleep(15)
 
 			print("Snapshot {0} completed".format(snap.id))
 		vol.delete()
