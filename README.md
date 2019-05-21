@@ -5,7 +5,7 @@ first install pipenv, then:
 
 ```
 pipenv install
-pipenv run "python Meteors/findMeteors.py"
+pipenv run "python tagomyzer/tagomyzer.py"
 ```
 
 ###Config
