@@ -12,7 +12,7 @@ pipenv run "python Meteors/findMeteors.py"
 
 Tagomyzer uses the aws-cli config file. create a profile for tagomyzer:
 
-`aws configure --profile Tagomyzer`
+`aws configure --profile <profile name>`
 
 or use an existing profile
 
@@ -22,4 +22,14 @@ or use an existing profile
 
 *command* is instances, volumes or snapshots
 *subcommand* - depends on command, use  <command> --help for a list of subcomands
-*--project* is optional
+*--project* is optional, there are other flags depending on the command/subcomand
+
+###Tagomyzing
+
+You can check first all unused volumes:
+
+`pipenv run python tagomyzer/tagomyzer.py volumes list --unused`
+
+To tagomize volumes use the following command:
+
+`pipenv run python tagomyzer/tagomyzer.py volumes tagomyze`

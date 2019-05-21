@@ -110,7 +110,12 @@ def tagomyze_volumes(tag):
 					}
 					]
 				)
-			snap.wait_until_completed()
+			#snap.wait_until_completed()
+			while has_pending_snapshot(vol):
+				print("Snapshot {0} is {1} completed".format(snap.id, snap.progress))
+				time.sleep(3)
+
+
 			print("Snapshot {0} completed".format(snap.id))
 		else:
 			snap=vol.create_snapshot(
@@ -122,7 +127,11 @@ def tagomyze_volumes(tag):
 					}
 					]
 				)
-			snap.wait_until_completed()
+			#snap.wait_until_completed()
+			while has_pending_snapshot(vol):
+				print("Snapshot {0} is {1} completed".format(snap.id, snap.progress))
+				time.sleep(3)
+
 			print("Snapshot {0} completed".format(snap.id))
 		vol.delete()
 		print("The Volume has been deleted")
