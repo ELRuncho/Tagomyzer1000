@@ -10,6 +10,7 @@ pylint = "*"
 [packages]
 boto3 = "*"
 click = "*"
+time = "*"
 
 [requires]
 python_version = "3.6"
