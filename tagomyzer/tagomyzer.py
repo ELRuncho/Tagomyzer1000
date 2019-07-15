@@ -306,12 +306,8 @@ def reboot_instance(project, forced):
 def secGroups():
 	"""Comands for Security Groups"""
 
-@secGroups.command('list')
-def list_secGroups():
-	
-
 @secGroups.command('asolist')
-@click.option('--secgroup', default=None, help='Input the id of the security tool you want to delete')
+@click.option('--secgroup', default=None, help='Input the id of the security group you want to list the asociations of')
 def list_asoSecGroups(secgroup):
 	"Lists asociated Security Groups"
 	try:
@@ -323,7 +319,19 @@ def list_asoSecGroups(secgroup):
 	except ClientError as e:
 		print(e)
 
-	
+@secGroups.command('tagomyze')
+@click.option('--secgroup', default=None, help='Input the id of the security group you want to delete')
+def tagomyze_SecGroup(secgroup):
+	"Delete the specified security group"
+	if secgroup:
+		try:
+			response= ec2Client.describe_security_groups()
+			allgroups=response['SecurityGroups']
+			asogroups=crawl_secGroups(allgroups,secgroup)
+		except ClientError as e:
+			print(e)
+	else:
+		print('You need to add the id of the security group')
 
 if __name__== '__main__':
 	cli()
