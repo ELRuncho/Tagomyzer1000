@@ -27,7 +27,7 @@ def crawl_secGroups(groups,targetGroup):
 def related_sec_rules(permissions):
 	rules=[]
 	for p in permissions:
-		if p['UserIdGrouPairs']:
+		if p['UserIdGroupPairs']:
 			rules.append(p)
 	return rules
 
@@ -340,10 +340,16 @@ def tagomyze_SecGroup(secgroup):
 
 			for a in asogroups:
 				relrules=related_sec_rules(a['IpPermissions'])
-				a.revoke_ingress(IpPermissions=relrules)
-				
+				sg=ec2.SecurityGroup(a['GroupId'])
+				sg.revoke_ingress(IpPermissions=relrules)		
 		except ClientError as e:
 			print(e)
+		
+		try:
+			target=ec2.SecurityGroup(secgroup)
+			target.delete()
+		except ClientError as e:
+			print(e)	
 	else:
 		print('You need to add the id of the security group')
 
