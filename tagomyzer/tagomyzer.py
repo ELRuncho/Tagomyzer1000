@@ -1,17 +1,29 @@
 import boto3
 import click
 import time
+from botocore.exceptions import ClientError
 
-session= boto3.Session(profile_name='natgeouat')
+session= boto3.Session(profile_name='personal')
 ec2 = session.resource('ec2')
 ebs = ec2.volumes.all()
+ec2Client = session.client('ec2')
 
 def filter_volumes(flag):
 	volumes=[]
 	if flag=='unused':
 		volumes=[vol for vol in ebs if vol.state=='available']
 		return volumes
-			
+
+def crawl_secGroups(groups,targetGroup):
+	relatedGroups=[]
+	for g in groups:
+		for per in g['IpPermissions']:
+			if per['UserIdGroupPairs']:
+				for pair in per['UserIdGroupPairs']:
+					if pair['GroupId']==targetGroup:
+						relatedGroups.append(g) 	
+	return relatedGroups
+
 def print_volumes(volumes):
 	for v in volumes:
 			print(" | ".join((
@@ -34,6 +46,7 @@ def filter_instances(project):
 def has_pending_snapshot(volume):
 	snapshots=list(volume.snapshots.all())
 	return snapshots and snapshots[0].state=='pending'
+
 
 @click.group()
 def cli():
@@ -287,6 +300,30 @@ def reboot_instance(project, forced):
 	else:
 		print("You must include the project name")
 	return
+
+
+@cli.group('secGroups')
+def secGroups():
+	"""Comands for Security Groups"""
+
+@secGroups.command('list')
+def list_secGroups():
+	
+
+@secGroups.command('asolist')
+@click.option('--secgroup', default=None, help='Input the id of the security tool you want to delete')
+def list_asoSecGroups(secgroup):
+	"Lists asociated Security Groups"
+	try:
+		response = ec2Client.describe_security_groups()
+		allgroups=response['SecurityGroups']
+		asogroups=crawl_secGroups(allgroups,secgroup)
+		for a in asogroups:
+			print(a['GroupId'])
+	except ClientError as e:
+		print(e)
+
+	
 
 if __name__== '__main__':
 	cli()
