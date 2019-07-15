@@ -24,6 +24,13 @@ def crawl_secGroups(groups,targetGroup):
 						relatedGroups.append(g) 	
 	return relatedGroups
 
+def related_sec_rules(permissions):
+	rules=[]
+	for p in permissions:
+		if p['UserIdGrouPairs']:
+			rules.append(p)
+	return rules
+
 def print_volumes(volumes):
 	for v in volumes:
 			print(" | ".join((
@@ -126,8 +133,8 @@ def tagomyze_volumes(tag):
 			#snap.wait_until_completed()
 			print("in progress")
 			while has_pending_snapshot(vol):
-				print(".")
-				time.sleep(15)
+				print("Snapshot {0} is {1} completed".format(snap.id, snap.progress))
+				time.sleep(3)
 
 
 			print("Snapshot {0} completed".format(snap.id))
@@ -144,8 +151,8 @@ def tagomyze_volumes(tag):
 			#snap.wait_until_completed()
 			print("in progress")
 			while has_pending_snapshot(vol):
-				print(".")
-				time.sleep(15)
+				print("Snapshot {0} is {1} completed".format(snap.id, snap.progress))
+				time.sleep(3)
 
 			print("Snapshot {0} completed".format(snap.id))
 		vol.delete()
@@ -233,7 +240,7 @@ def stop_instances(project,forced):
 			print("Stopping instance {0}".format(i.id))
 			try:
 				i.stop()
-			except botocore.exeptions.ClientError as e:
+			except ClientError as e:
 				print("Could not stop instance {0}. ".filter(i.id))
 				continue
 	elif forced:
@@ -243,7 +250,7 @@ def stop_instances(project,forced):
 			print("Stopping instance {0}".format(i.id))
 			try:
 				i.stop()
-			except botocore.exeptions.ClientError as e:
+			except ClientError as e:
 				print("Could not stop instance {0}. ".filter(i.id))
 				continue
 	else:
@@ -264,7 +271,7 @@ def start_instances(project, forced):
 			print("Starting instance {0}. ".format(i.id))
 			try:
 				i.start()
-			except botocore.exeptions.ClientError as e:
+			except ClientError as e:
 				print("Could not start instnance {0}".format(i.id))
 				continue
 	elif forced:
@@ -274,7 +281,7 @@ def start_instances(project, forced):
 			print("Starting instance {0}. ".format(i.id))
 			try:
 				i.start()
-			except botocore.exeptions.ClientError as e:
+			except ClientError as e:
 				print("Could not start instnance {0}".format(i.id))
 				continue
 	else:
@@ -330,6 +337,11 @@ def tagomyze_SecGroup(secgroup):
 			response= ec2Client.describe_security_groups()
 			allgroups=response['SecurityGroups']
 			asogroups=crawl_secGroups(allgroups,secgroup)
+
+			for a in asogroups:
+				relrules=related_sec_rules(a['IpPermissions'])
+				a.revoke_ingress(IpPermissions=relrules)
+				
 		except ClientError as e:
 			print(e)
 	else:
